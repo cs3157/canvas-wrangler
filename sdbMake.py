@@ -1,25 +1,37 @@
 import sys
 import csv
 
-
-if len(sys.argv) < 3:
-	print "usage:", sys.argv[0], "<csv>", "<sdb>"
+if len(sys.argv) < 2:
+	print "usage:", sys.argv[0], "<input: grades csv spreadsheet>", " [<output: student csv database>]"
 	exit()
 
-uniCol = 2
-userIdCol = 1
+inPath = sys.argv[1]
+if len(sys.argv) < 3:
+	print 'Using default output filename: sdb.csv'
+	outPath = 'sdb.csv'
+else:
+	outPath = sys.argv[2]
 
+# column indices in grades spreadsheet
+userIdCol = 1
+uniCol = 2
+
+# initialise student database
 sdb = {}
 
-csvReader = csv.reader(open(sys.argv[1], 'r'))
+# open grades spreadsheet for reading
+grades = csv.reader(open(inPath, 'r'))
 
-csvReader.next()
-csvReader.next()
+# skip over headers
+grades.next()
+grades.next()
 
-for r in csvReader:
+# read grades into student database
+for r in grades:
 	sdb[r[uniCol]] = r[userIdCol]
 
-sdbWriter = csv.writer(open(sys.argv[2], 'w'))
+# write out student database
+sdbWriter = csv.writer(open(outPath, 'w'))
 
 for k, v in sdb.items():
 	sdbWriter.writerow([k, v])
