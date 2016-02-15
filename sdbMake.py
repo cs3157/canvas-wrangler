@@ -2,15 +2,15 @@ import sys
 import csv
 
 if len(sys.argv) < 2:
-	print "usage:", sys.argv[0], "<input: grades csv spreadsheet>", " [<output: student csv database>]"
-	exit()
+    print "usage:", sys.argv[0], "<input: grades csv spreadsheet>", " [<output: student csv database>]"
+    exit()
 
 inPath = sys.argv[1]
 if len(sys.argv) < 3:
-	print 'Using default output filename: sdb.csv'
-	outPath = 'sdb.csv'
+    print 'Using default output filename: sdb.csv'
+    outPath = 'sdb.csv'
 else:
-	outPath = sys.argv[2]
+    outPath = sys.argv[2]
 
 # column indices in grades spreadsheet
 userIdCol = 1
@@ -28,10 +28,10 @@ grades.next()
 
 # read grades into student database
 for r in grades:
-	sdb[r[uniCol]] = r[userIdCol]
+    sdb[r[uniCol]] = r[userIdCol]
 
 # write out student database
 sdbWriter = csv.writer(open(outPath, 'w'))
 
 for k, v in sdb.items():
-	sdbWriter.writerow([k, v])
+    sdbWriter.writerow([k, v])

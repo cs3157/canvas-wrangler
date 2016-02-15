@@ -1,71 +1,123 @@
-import sys
+import os
+import argparse
 import csv
 import requests
-import os
 
-if len(sys.argv) < 3:
-	print 'usage:', sys.argv[0], '<course id>', '<assignment id>', '<grades spreadsheet>' ' [<sdb>]'
-	exit()
+# parser object
+parser = argparse.ArgumentParser(description='Upload grades and comments to Canvas')
 
-courseId = sys.argv[1]
-assignmentId = sys.argv[2]
-gradesPath = sys.argv[3]
+# grade options
+parser.add_argument('-g', '--grade',
+                    default=False, action='store_true',
+                    help='upload grades')
+parser.add_argument('-G', '--grade-col',
+                    default='grade', type=str,
+                    help='set name for grade header column',
+                    metavar='<header>')
 
-if len(sys.argv) == 4:
-	print 'Using default sdb path: sdb.csv'
-	sdbPath = './sdb.csv'
-else:
-	sdbPath = sys.argv[4]
+# comment options
+parser.add_argument('-c', '--comment',
+                    default=False, action='store_true',
+                    help='upload comments')
+parser.add_argument('-C', '--comment-col',
+                    default='comment', type=str,
+                    help='set name for comment header column',
+                    metavar='<header>')
+
+# student options
+parser.add_argument('-s', '--sdb',
+                    default='sdb.csv', type=argparse.FileType('r'),
+                    help='csv spreadsheet containing each student\'s user-id',
+                    metavar='<sdb.csv>')
+parser.add_argument('-S', '--student-col',
+                    default='uni', type=str,
+                    help='set name for student header column',
+                    metavar='<header>')
+
+# required positional args
+parser.add_argument('course_id',
+                    type=int,
+                    help='course-id from Canvas',
+                    metavar='<course-id>')
+parser.add_argument('assignment_id',
+                    type=int,
+                    help='assignment-id from Canvas',
+                    metavar='<assignment-id>')
+parser.add_argument('grades',
+                    type=argparse.FileType('r'),
+                    help='csv spreadsheet containing grades and/or comments',
+                    metavar='<grades.csv>')
+
+# parse args into args
+args = parser.parse_args()
 
 # set assignment id
-apiUrl = 'https://courseworks2.columbia.edu/api/v1/courses/'+courseId+'/assignments/'+assignmentId+'/submissions/update_grades'
+apiUrl = 'https://courseworks2.columbia.edu/api/v1' \
+        +'/courses/'+args.course_id \
+        +'/assignments/'+args.assignment_id \
+        +'/submissions/update_grades'
+
+# open csv files
+grades = csv.reader(args.grades)
+sdb = csv.reader(args.students)
+
+# determine whether or not to submit grades or comments or both
+submit_grade = args.grade
+submit_comment = args.comment
+if not (submit_grade or submit_comment):
+    submit_grade = submit_comment = True
 
 # set authorization header for POST request
 # replace with your own authentication key
 authVar = 'CANVASPONIES'
-if os.environ.has_key(authVar):
-	print 'Error: authentication token enviromental variable', authVar, 'not set.'
-	exit()
-
+if not os.environ.has_key(authVar):
+    print 'Error: authentication token enviromental variable', authVar, 'not set.'
+    exit(-1)
 authHeader = {'Authorization': 'Bearer ' + os.environ[authVar]}
 
 # populate student UNI->user id lookup dict from sdb.csv
-sLookup = {}
-sdb = csv.reader(open(sdbPath, 'r'))
+students = {}
 for s in sdb:
-	sLookup[s[0]] = s[1]
+    students[s[0]] = s[1]
 
-# open and read lab grades csv
-grades = csv.reader(open(gradesPath, 'r'))
+header_col = grades.next()
+for i in range(len(header_col)):
+    if header_col[i].lower() == args.uni_col:
+        uni_col = i
+        break
+if not uni_col:
+    print 'Error: could not find UNI header', args.uni_col
+    exit()
 
-# default format
-uniCol, gradeCol, commentCol = 2, 3, 4 # default indices
-uniT = gradeT = commentT = -1
+if submit_grade:
+    for i in range(len(header_col)):
+        if header_col[i].lower() == args.grade_col:
+            grade_col = i
+            break
+    if not grade_col:
+        print 'Error: could not find grade column header', args.grade_col
+        exit()
 
-# calibrate column indices
-headerCol = grades.next()
-for i in range(0,len(headerCol)):
-	if headerCol[i].lower() == 'uni':
-		uniT = i
-	elif headerCol[i].lower() == 'grade':
-		gradeT = i
-	elif headerCol[i].lower() == 'comment':
-		commentT = i
-if uniT == -1 or gradeT == -1 or commentT == -1:
-	print 'Error: badly formatted header row'
-	exit()
-# set column indices
-uniCol, gradeCol, commentCol = uniT, gradeT, commentT
+if submit_comment:
+    for i in range(len(header_col)):
+        if header_col[i].lower() == args.comment_col:
+            comment_col = i
+            break
+    if not comment_col:
+        print 'Error: could not find comment column header', args.comment_col
+        exit()
 
 postData = {}
 # populate POST request data
 for r in grades:
-	if r[uniCol] in sLookup:
-		user = 'grade_data[' + sLookup[r[uniCol]] + ']'
-		postData[user + '[posted_grade]'] = r[gradeCol]
-		postData[user + '[text_comment]'] = r[commentCol]
-	else:
-		print 'Warning:', r[uniCol], 'not found in sdb'
+    if r[uni_col] in students:
+        user = 'grade_data[' + students[r[uni_col]] + ']'
+        if submit_grade:
+            postData[user + '[posted_grade]'] = r[grade_col]
+        if submit_comment:
+            postData[user + '[text_comment]'] = r[comment_col]
+    else:
+        print 'Warning:', r[uni_col], 'not found in sdb'
 
 # post request and print response
 print requests.post(apiUrl, data=postData, headers=authHeader).json()
