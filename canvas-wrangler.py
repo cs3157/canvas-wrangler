@@ -54,7 +54,7 @@ parser.add_argument('-n', '--no-submit',
 
 # parse args into args
 args = parser.parse_args()
-print args
+
 # set assignment id
 URL = 'https://courseworks2.columbia.edu/api/v1' \
         +'/courses/'+args.course_id \
