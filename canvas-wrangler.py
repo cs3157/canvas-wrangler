@@ -48,11 +48,15 @@ parser.add_argument('grades',
                     help='csv spreadsheet containing grades and/or comments',
                     metavar='<grades.csv>')
 
+parser.add_argument('-n', '--no-submit',
+                    default=False, action='store_true',
+                    help='do not submit grades; for testing purposes')
+
 # parse args into args
 args = parser.parse_args()
 
 # set assignment id
-apiUrl = 'https://courseworks2.columbia.edu/api/v1' \
+URL = 'https://courseworks2.columbia.edu/api/v1' \
         +'/courses/'+args.course_id \
         +'/assignments/'+args.assignment_id \
         +'/submissions/update_grades'
@@ -69,11 +73,11 @@ if not (submit_grade or submit_comment):
 
 # set authorization header for POST request
 # replace with your own authentication key
-authVar = 'CANVASPONIES'
-if not os.environ.has_key(authVar):
-    print 'Error: authentication token enviromental variable', authVar, 'not set.'
-    exit(-1)
-authHeader = {'Authorization': 'Bearer ' + os.environ[authVar]}
+AUTHVAR = 'CANVASPONIES'
+if not os.environ.has_key(AUTHVAR):
+    print 'Error: authentication token enviromental variable', AUTHVAR, 'not set.'
+    exit(1)
+HEADER = {'Authorization': 'Bearer ' + os.environ[AUTHVAR]}
 
 # populate student UNI->user id lookup dict from sdb.csv
 students = {}
@@ -87,7 +91,7 @@ for i in range(len(header_col)):
         break
 if not uni_col:
     print 'Error: could not find UNI header', args.uni_col
-    exit()
+    exit(2)
 
 if submit_grade:
     for i in range(len(header_col)):
@@ -96,7 +100,7 @@ if submit_grade:
             break
     if not grade_col:
         print 'Error: could not find grade column header', args.grade_col
-        exit()
+        exit(3)
 
 if submit_comment:
     for i in range(len(header_col)):
@@ -105,19 +109,23 @@ if submit_comment:
             break
     if not comment_col:
         print 'Error: could not find comment column header', args.comment_col
-        exit()
+        exit(4)
 
-postData = {}
+post_data = {}
 # populate POST request data
 for r in grades:
     if r[uni_col] in students:
         user = 'grade_data[' + students[r[uni_col]] + ']'
         if submit_grade:
-            postData[user + '[posted_grade]'] = r[grade_col]
+            post_data[user + '[posted_grade]'] = r[grade_col]
         if submit_comment:
-            postData[user + '[text_comment]'] = r[comment_col]
+            post_data[user + '[text_comment]'] = r[comment_col]
     else:
         print 'Warning:', r[uni_col], 'not found in sdb'
 
+if args.no_submit:
+    print "--no-submit flag specified; will not submit to Canvas."
+    print post_data
+    exit()
 # post request and print response
-print requests.post(apiUrl, data=postData, headers=authHeader).json()
+print requests.post(URL, data=post_data, headers=HEADER).json()
