@@ -20,7 +20,7 @@ In order to interface with the Canvas API, one must generate an authentication t
 
 _Be sure to save the authentication token somewhere safe! Apparently it can't be recovered from Canvas once the dialogue is closed._
 
-Export your OAuth token as an environmental variable named `CANVASPONIES`
+Export your OAuth token as an environmental variable named `CANVASPONIES` in your command line shell.
 
 Student Database Creation
 -------------------------
@@ -34,22 +34,19 @@ The student database is created using the Grades spreadsheet from Canvas. To cre
 
 _If the optional student database filename is not specified, the default of sdb.csv will be used_
 
-The format for each row of the sdb.csv is `<UNI>,<user id>`
+The format for each row of the sdb.csv is `<UNI>,<user-id>`
 
 Grade Spreadsheet Format
 ------------------------
-The grade spreadsheet should be a .csv file. Each column for each student in the grade spreadsheet should be in the following format:
-    <TA#>,<TA>,<uni>,<grade>,<comment>
+The grade spreadsheet should be a .csv file. Entries containing commas should be wrapped in quotation marks (e.g. `"contains a comma, this entry"`), and quotation marks should be 'escaped' using double quotation marks (e.g. `"this entry ""uses"" quotation marks"`). (Exporting a .csv from Google Docs will do this for you.)
 
-There should be a single header row that contains the names of each column. It should be exactly as follows: `TA#,TA,uni,grade,comment`, as the default indices are hardcoded into the program. If the header row is blank or malformed, this is the format that will be assumed.
-
-However, if the order is shuffled or there are extra columns, as long as the keywords `uni`, `grade`, and `comment` are present, the program will override and correct its default indices.
+The grade spreadsheet must contain a single header row so that Canvas Wrangler can calibrate its column indices. By default, Canvas Wrangler will expect the grade column to be named `grade` and the comment column to be named `comment`. However, these can be overridden by using the `-G` and `-C` flags respectfully and specifying the header name after the flag argument (e.g. `python canvas-wrangler.py -G studentgrade`).
 
 Grade and Comment Submission
 ----------------------------
-In order to batch upload both comments and grades, this program uses the Canvas API's update\_grades endpoint.
+In order to batch upload both comments and grades, this program uses the Canvas API's update\_grades endpoint. By default, Canvas Wrangler will try to upload both grades and comments. However, if either the `-c` or the `-g` are specified, Canvas Wrangler will only upload what has been specified by flag options.
 
-The program uses sdb.csv as a UNI lookup table, to translate from a student's UNI to their user id.
+By default, Canvas Wrangler will try to open `sdb.csv` and use it as the UNI lookup table, to translate from a student's UNI to their user id. The filename can be overridden using the `-s` flag, but it should always be the same format.
 
 The program requires the course id; this is the last portion of the course page's URL. For example, in [https://courseworks2.columbia.edu/courses/6858](https://courseworks2.columbia.edu/courses/6858) the course id is 6858.
 
@@ -59,9 +56,9 @@ The program updates each student's grade record by reading the from the lab grad
 
 To upload grades, run the command:
 
-    python canvas-wrangler.py <course id> <assignment id> <grades spreadsheet> [<sdb>]
+    python canvas-wrangler.py <course id> <assignment id> <grades spreadsheet>
 
-_Specifying the sdb.csv path is optional; if it is missing, the program will try to open ./sdb.csv by default._
+For additional information about usage of flags, run `python canvas-wrangler.py --help`
 
 Other Remarks
 -------------
