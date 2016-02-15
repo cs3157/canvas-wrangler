@@ -90,8 +90,10 @@ for i in range(len(header_col)):
     if header_col[i].lower() == args.student_col:
         uni_col = i
         break
-if not uni_col:
-    print 'Error: could not find UNI header', args.uni_col
+try:
+    uni_col
+except NameError:
+    print 'Error: could not find UNI header:', args.uni_col
     exit(2)
 
 if submit_grade:
