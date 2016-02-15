@@ -58,8 +58,10 @@ To upload grades, run the command:
 
     python canvas-wrangler.py <course id> <assignment id> <grades spreadsheet>
 
+To run Canvas Wrangler without submitting to Canvas, for testing, use the `-n` flag. The program will print out information about the arguments and the data it was going to post, then quit before submitting to Canvas.
+
 For additional information about usage of flags, run `python canvas-wrangler.py --help`
 
 Other Remarks
 -------------
-If there are any problems/suggestions, please feel free to contact me about them at [j.hui@columbia.edu](mailto:j.hui@columbia.edu)
+If you have any problems/suggestions/complaints/_love letters to the old Courseworks_, please feel free to contact me about them at [j.hui@columbia.edu](mailto:j.hui@columbia.edu)
