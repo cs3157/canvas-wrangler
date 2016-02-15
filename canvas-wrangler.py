@@ -2,6 +2,7 @@ import os
 import argparse
 import csv
 import requests
+import pprint
 
 # parser object
 parser = argparse.ArgumentParser(description='Upload grades and comments to Canvas')
@@ -125,16 +126,19 @@ for r in grades:
 
 if args.no_submit:
     print 
-    print "--no-submit flag specified; will not submit to Canvas."
-    print "******************************************************"
+    print " --no-submit option specified; not submitting to Canvas."
+    print "========================================================="
+    print "==================== Program Report ====================="
+    print "========================================================="
     print
     print "/****** args ******/"
-    print args
+    pprint.pprint(vars(args))
     print
     print "/*** post_data ***/"
-    print post_data
+    pprint.pprint(post_data)
     print
-    print "******************************************************"
+    print "========================================================="
+    print
     exit()
 # post request and print response
 print requests.post(URL, data=post_data, headers=HEADER).json()
