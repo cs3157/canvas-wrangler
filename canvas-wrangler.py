@@ -36,11 +36,11 @@ parser.add_argument('-S', '--student-col',
 
 # required positional args
 parser.add_argument('course_id',
-                    type=int,
+                    type=str,
                     help='course-id from Canvas',
                     metavar='<course-id>')
 parser.add_argument('assignment_id',
-                    type=int,
+                    type=str,
                     help='assignment-id from Canvas',
                     metavar='<assignment-id>')
 parser.add_argument('grades',
@@ -54,7 +54,7 @@ parser.add_argument('-n', '--no-submit',
 
 # parse args into args
 args = parser.parse_args()
-
+print args
 # set assignment id
 URL = 'https://courseworks2.columbia.edu/api/v1' \
         +'/courses/'+args.course_id \
@@ -63,7 +63,7 @@ URL = 'https://courseworks2.columbia.edu/api/v1' \
 
 # open csv files
 grades = csv.reader(args.grades)
-sdb = csv.reader(args.students)
+sdb = csv.reader(args.sdb)
 
 # determine whether or not to submit grades or comments or both
 submit_grade = args.grade
@@ -86,7 +86,7 @@ for s in sdb:
 
 header_col = grades.next()
 for i in range(len(header_col)):
-    if header_col[i].lower() == args.uni_col:
+    if header_col[i].lower() == args.student_col:
         uni_col = i
         break
 if not uni_col:
@@ -124,8 +124,17 @@ for r in grades:
         print 'Warning:', r[uni_col], 'not found in sdb'
 
 if args.no_submit:
+    print 
     print "--no-submit flag specified; will not submit to Canvas."
+    print "******************************************************"
+    print
+    print "/****** args ******/"
+    print args
+    print
+    print "/*** post_data ***/"
     print post_data
+    print
+    print "******************************************************"
     exit()
 # post request and print response
 print requests.post(URL, data=post_data, headers=HEADER).json()
