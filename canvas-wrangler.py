@@ -99,8 +99,10 @@ if submit_grade:
         if header_col[i].lower() == args.grade_col:
             grade_col = i
             break
-    if not grade_col:
-        print 'Error: could not find grade column header', args.grade_col
+    try:
+        grade_col
+    except NameError:
+        print 'Error: could not find grade column header:', args.grade_col
         exit(3)
 
 if submit_comment:
@@ -108,8 +110,10 @@ if submit_comment:
         if header_col[i].lower() == args.comment_col:
             comment_col = i
             break
-    if not comment_col:
-        print 'Error: could not find comment column header', args.comment_col
+    try:
+        comment_col
+    except NameError:
+        print 'Error: could not find comment column header:', args.comment_col
         exit(4)
 
 post_data = {}
