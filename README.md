@@ -58,7 +58,7 @@ To upload grades, run the command:
 
     python canvas-wrangler.py <course id> <assignment id> <grades spreadsheet>
 
-*The assignment must be puslished before grades and comments can be uploaded.*
+_The assignment must be puslished before grades and comments can be uploaded._
 
 To run Canvas Wrangler without submitting to Canvas, for testing, use the `-n` flag. The program will print out information about the arguments and the data it was going to post, then quit before submitting to Canvas.
 
