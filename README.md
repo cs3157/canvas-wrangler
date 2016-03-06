@@ -30,7 +30,7 @@ These are maintained in a student database file (named sdb.csv by default)
 
 The student database is created using the Grades spreadsheet from Canvas. To create/update the spreadsheet, run the command:
 
-    python sdbMake.py <input: grades csv spreadsheet> [<output: student csv database>]
+    ./sdbMake.py <input: grades csv spreadsheet> [<output: student csv database>]
 
 _If the optional student database filename is not specified, the default of sdb.csv will be used_
 
@@ -56,7 +56,7 @@ The program updates each student's grade record by reading the from the lab grad
 
 To upload grades, run the command:
 
-    python canvas-wrangler.py <course id> <assignment id> <grades spreadsheet>
+    ./canvas-wrangler.py <course id> <assignment id> <grades spreadsheet>
 
 _The assignment must be puslished before grades and comments can be uploaded._
 
