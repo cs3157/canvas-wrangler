@@ -28,7 +28,7 @@ parser.add_argument('-C', '--comment-col',
 
 # student options
 parser.add_argument('-s', '--sdb',
-                    default='sdb.csv', type=argparse.FileType('r'),
+                    default='sdb.csv', type=argparse.FileType('rU'),
                     help='csv spreadsheet containing each student\'s user-id',
                     metavar='<sdb.csv>')
 parser.add_argument('-S', '--student-col',
@@ -46,7 +46,7 @@ parser.add_argument('assignment_id',
                     help='assignment-id from Canvas',
                     metavar='<assignment-id>')
 parser.add_argument('grades',
-                    type=argparse.FileType('r'),
+                    type=argparse.FileType('rU'),
                     help='csv spreadsheet containing grades and/or comments',
                     metavar='<grades.csv>')
 
@@ -125,9 +125,19 @@ for r in grades:
     if r[uni_col] in students:
         user = 'grade_data[' + students[r[uni_col]] + ']'
         if submit_grade:
-            post_data[user + '[posted_grade]'] = r[grade_col]
+            try:
+                float(r[grade_col])
+                post_data[user + '[posted_grade]'] = r[grade_col]
+            except ValueError:
+                print 'Warning:', r[grade_col], 'is not numeric'
+                print 'Not sumbitting grade for', r[uni_col]
         if submit_comment:
-            post_data[user + '[text_comment]'] = r[comment_col]
+            try:
+                r[comment_col].decode('utf-8')
+                post_data[user + '[text_comment]'] = r[comment_col]
+            except UnicodeDecodeError:
+                print 'Warning:', r[comment_col], 'contains bad characters'
+                print 'Not submitting comment for', r[uni_col]
     else:
         print 'Warning:', r[uni_col], 'not found in sdb'
 
