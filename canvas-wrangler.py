@@ -143,19 +143,59 @@ for r in grades:
 
 if args.no_submit:
     print 
-    print " --no-submit option specified; not submitting to Canvas."
-    print "========================================================="
-    print "==================== Program Report ====================="
-    print "========================================================="
+    print ' --no-submit option specified; not submitting to Canvas.'
+    print '========================================================='
+    print '==================== Program Report ====================='
+    print '========================================================='
     print
-    print "/****** args ******/"
+    print '/****** args ******/'
     pprint.pprint(vars(args))
     print
-    print "/*** post_data ***/"
+    print '/*** post_data ***/'
     pprint.pprint(post_data)
     print
-    print "========================================================="
+    print '========================================================='
     print
-    exit()
+    exit(0)
+
 # post request and print response
-print requests.post(URL, data=post_data, headers=HEADER).json()
+res = requests.post(URL, data=post_data, headers=HEADER)
+res_code = res.status_code
+res = res.json()
+
+print
+if res_code == requests.codes.ok:
+    # success
+    print 'Grades and comments successfully submitted!'
+    print '========================================================='
+    print '================== Submission Report ===================='
+    print '========================================================='
+    print 'Course ID:', res['context_id']
+    print 'Assignment ID:', res['id']
+    print
+    print 'Please wait as Canvas processes the POST request...'
+    print 'Feel free to check its progress at:'
+    print res['url']
+    exit(0)
+else:
+    print 'Error:', res_code
+    print '========================================================='
+    print '===================== Error Report ======================'
+    print '========================================================='
+    print
+    print 'Error report ID:', res['error_report_id']
+    for error in res['errors']:
+        print 'Error message:', error['message']
+        print 'Error code:', error['error_code']
+    print
+    print 'If that wasn\'t helpful (which it usually isn\'t)'
+    print 'please try the following:'
+    print '\t*Make sure assignment is published'
+    print '\t*Remove potential bad unicode characters'
+    print '\t\t(most commonly smart quotation marks)'
+    print '\t*Try again later; might actually be a server error?'
+    print '\t*Try turning your computer off and on again'
+    print '\t ^^^ please don\'t actually'
+    print
+    print 'Also please contact j.hui@columbia.edu about this error'
+    exit(res_code)
