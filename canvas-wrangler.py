@@ -159,8 +159,9 @@ for r in grades:
     else:
         print 'Warning:', r[uni_col], 'not found in sdb'
 
-
-
+#################################
+##### Submission and Report #####
+#################################
 
 if args.no_submit:
     print 
@@ -180,9 +181,6 @@ if args.no_submit:
     exit(0)
 
 # post request and print response
-
-
-
 res = requests.post(URL, data=post_data, headers=HEADER)
 res_code = res.status_code
 res = res.json()
