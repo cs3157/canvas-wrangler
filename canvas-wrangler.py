@@ -199,6 +199,8 @@ if res_code == requests.codes.ok:
     print 'Feel free to check its progress at:'
     print res['url']
     print
+    print '========================================================='
+    print
     exit(0)
 else:
     print 'Error:', res_code
@@ -221,5 +223,7 @@ else:
     print '\t  ^^^ please don\'t actually'
     print
     print 'Also please contact j.hui@columbia.edu about this error'
+    print
+    print '========================================================='
     print
     exit(res_code)
