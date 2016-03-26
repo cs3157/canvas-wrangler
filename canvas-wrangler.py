@@ -198,6 +198,7 @@ if res_code == requests.codes.ok:
     print 'Please wait as Canvas processes the POST request...'
     print 'Feel free to check its progress at:'
     print res['url']
+    print
     exit(0)
 else:
     print 'Error:', res_code
@@ -210,14 +211,15 @@ else:
         print 'Error message:', error['message']
         print 'Error code:', error['error_code']
     print
-    print 'If that wasn\'t helpful (which it usually isn\'t)'
+    print 'If that wasn\'t helpful (which it usually isn\'t),'
     print 'please try the following:'
-    print '\t*Make sure assignment is published'
-    print '\t*Remove potential bad unicode characters'
+    print '\t* Make sure assignment is published'
+    print '\t* Remove potential bad unicode characters'
     print '\t\t(most commonly smart quotation marks)'
-    print '\t*Try again later; might actually be a server error?'
-    print '\t*Try turning your computer off and on again'
-    print '\t ^^^ please don\'t actually'
+    print '\t* Try again later; might actually be a server error?'
+    print '\t* Try turning your computer off and on again'
+    print '\t  ^^^ please don\'t actually'
     print
     print 'Also please contact j.hui@columbia.edu about this error'
+    print
     exit(res_code)
