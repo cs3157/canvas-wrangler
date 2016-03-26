@@ -5,6 +5,10 @@ import csv
 import requests
 import pprint
 
+#################################
+##### Parser Configurations #####
+#################################
+
 # parser object
 parser = argparse.ArgumentParser(description='Upload grades and comments to Canvas')
 
@@ -54,6 +58,10 @@ parser.add_argument('-n', '--no-submit',
                     default=False, action='store_true',
                     help='do not submit grades; for testing purposes')
 
+###########################################
+##### Parse Args and Preliminary Work #####
+###########################################
+
 # parse args into args
 args = parser.parse_args()
 
@@ -80,6 +88,11 @@ if not os.environ.has_key(AUTHVAR):
     print 'Error: authentication token enviromental variable', AUTHVAR, 'not set.'
     exit(1)
 HEADER = {'Authorization': 'Bearer ' + os.environ[AUTHVAR]}
+
+
+####################################
+##### Calibrate Column Indices #####
+####################################
 
 # populate student UNI->user id lookup dict from sdb.csv
 students = {}
@@ -119,6 +132,11 @@ if submit_comment:
         print 'Error: could not find comment column header:', args.comment_col
         exit(4)
 
+
+########################
+##### Prepare Data #####
+########################
+
 post_data = {}
 # populate POST request data
 for r in grades:
@@ -141,6 +159,9 @@ for r in grades:
     else:
         print 'Warning:', r[uni_col], 'not found in sdb'
 
+
+
+
 if args.no_submit:
     print 
     print ' --no-submit option specified; not submitting to Canvas.'
@@ -159,6 +180,9 @@ if args.no_submit:
     exit(0)
 
 # post request and print response
+
+
+
 res = requests.post(URL, data=post_data, headers=HEADER)
 res_code = res.status_code
 res = res.json()
