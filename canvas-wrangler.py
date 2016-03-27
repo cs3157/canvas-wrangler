@@ -54,6 +54,16 @@ parser.add_argument('grades',
                     help='csv spreadsheet containing grades and/or comments',
                     metavar='<grades.csv>')
 
+# warning log options
+parser.add_argument('-L', '--log',
+                    default='', type=str,
+                    help='set filename for warning log',
+                    metavar='<warning.log>')
+parser.add_argument('-N', '--no-log',
+                    default=False, action='store_true',
+                    help='do not produce log file for warnings')
+
+# testing options
 parser.add_argument('-n', '--no-submit',
                     default=False, action='store_true',
                     help='do not submit grades; for testing purposes')
@@ -72,7 +82,9 @@ URL = 'https://courseworks2.columbia.edu/api/v1' \
         +'/submissions/update_grades'
 
 # open csv files
+grades_name = args.grades.name
 grades = csv.reader(args.grades)
+sdb_name = args.sdb.name
 sdb = csv.reader(args.sdb)
 
 # determine whether or not to submit grades or comments or both
@@ -89,6 +101,10 @@ if not os.environ.has_key(AUTHVAR):
     exit(1)
 HEADER = {'Authorization': 'Bearer ' + os.environ[AUTHVAR]}
 
+if len(args.log) == 0:
+    log_name = grades_name.rsplit('.', 1)[0] + '-warning.log'
+else:
+    log_name = args.log
 
 ####################################
 ##### Calibrate Column Indices #####
@@ -138,8 +154,12 @@ if submit_comment:
 ########################
 
 post_data = {}
+missing_err = []
+comment_err = []
+grade_err = []
+
 # populate POST request data
-for r in grades:
+for i, r in enumerate(grades):
     if r[uni_col] in students:
         user = 'grade_data[' + students[r[uni_col]] + ']'
         if submit_grade:
@@ -147,33 +167,84 @@ for r in grades:
                 float(r[grade_col])
                 post_data[user + '[posted_grade]'] = r[grade_col]
             except ValueError:
-                print 'Warning:', r[grade_col], 'is not numeric'
+                grade_err.append((i+2, r[uni_col], r[grade_col]))
+                print 'Warning: grade is not numeric'
+                print '{0}:{1}: {2} '.format(grades_name, i+2, r[grade_col])
                 print 'Not sumbitting grade for', r[uni_col]
+                print
         if submit_comment:
             try:
                 r[comment_col].decode('utf-8')
                 post_data[user + '[text_comment]'] = r[comment_col]
             except UnicodeDecodeError:
-                print 'Warning:', r[comment_col], 'contains bad characters'
+                comment_err.append((i+2, r[uni_col], r[comment_col]))
+                print 'Warning: comment contains invalid characters'
+                print '{0}:{1}: {2} '.format(grades_name, i+2, r[comment_col])
                 print 'Not submitting comment for', r[uni_col]
+                print
     else:
+        missing_err.append((i+2, r[uni_col], r[grade_col], r[comment_col]))
         print 'Warning:', r[uni_col], 'not found in sdb'
+        print
+
+
+########################
+##### Log Warnings #####
+########################
+
+merrlen, gerrlen, cerrlen = len(missing_err), len(grade_err), len(comment_err)
+
+if not args.no_log:
+    if (merrlen > 0 or gerrlen > 0 or cerrlen > 0):
+        err_report = '{0} missing UNIs, {1} non-numeric grades, and {2} invalid comments.\n'.format(merrlen, gerrlen, cerrlen)
+
+        log = open(log_name, 'w')
+        log.write('=========================================================\n')
+        log.write('====================== Error Log ========================\n')
+        log.write('=========================================================\n')
+        log.write('Gradesheet filename: {0}\n'.format(grades_name)) 
+        log.write('Student database filename: {0}\n'.format(sdb_name)) 
+       
+        log.write(err_report)
+        if merrlen > 0:
+            log.write('\n== Missing UNIs ==')
+            log.write('\n------------------\n')
+            for err in missing_err:
+                log.write('{0}:{1}:'.format(err[0], err[1]))
+                log.write('\n\tgrade:{0}\n\tcomment:{1}\n'.format(err[2],err[3]))
+        if gerrlen > 0:
+            log.write('\n== Non-numeric Grades ==')
+            log.write('\n------------------------\n')
+            for err in grade_err:
+                log.write('{0}:{1}: {2}\n'.format(err[0], err[1], err[2]))
+        if cerrlen > 0:
+            log.write('\n== Invalid Comments ==')
+            log.write('\n----------------------\n')
+            for err in comment_err:
+                log.write('{0}:{1}: {2}\n'.format(err[0], err[1], err[2]))
+        log.close()
+        print err_report
+    else:
+        print 'No warnings generated; no warning log created.\n'
+else:
+    print '--no-log: Not creating warning log.\n'
 
 #################################
 ##### Submission and Report #####
 #################################
 
 if args.no_submit:
-    print 
     print ' --no-submit option specified; not submitting to Canvas.'
     print '========================================================='
     print '==================== Program Report ====================='
     print '========================================================='
     print
-    print '/****** args ******/'
+    print '== args =='
+    print '----------'
     pprint.pprint(vars(args))
     print
-    print '/*** post_data ***/'
+    print '== post_data =='
+    print '---------------'
     pprint.pprint(post_data)
     print
     print '========================================================='
@@ -185,7 +256,6 @@ res = requests.post(URL, data=post_data, headers=HEADER)
 res_code = res.status_code
 res = res.json()
 
-print
 if res_code == requests.codes.ok:
     # success
     print 'Grades and comments successfully submitted!'
@@ -195,10 +265,9 @@ if res_code == requests.codes.ok:
     print 'Course ID:', res['context_id']
     print 'Assignment ID:', res['id']
     print
-    print 'Please wait as Canvas processes the POST request...'
+    print 'Please wait as Canvas processes this POST request...'
     print 'Feel free to check its progress at:'
     print res['url']
-    print
     print '========================================================='
     print
     exit(0)
@@ -223,7 +292,6 @@ else:
     print '\t  ^^^ please don\'t actually'
     print
     print 'Also please contact j.hui@columbia.edu about this error'
-    print
     print '========================================================='
     print
     exit(res_code)
