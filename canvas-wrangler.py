@@ -251,9 +251,15 @@ if args.no_submit:
     exit(0)
 
 # post request and print response
-res = requests.post(URL, data=post_data, headers=HEADER)
-res_code = res.status_code
-res = res.json()
+try:
+    res = requests.post(URL, data=post_data, headers=HEADER)
+    res_code = res.status_code
+    res = res.json()
+except requests.exceptions.ConnectionError:
+    print 'Error: internet connection error'
+    print 'Could not submit grades and comments'
+    print
+    exit(-1)
 
 if res_code == requests.codes.ok:
     # success
