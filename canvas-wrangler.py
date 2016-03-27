@@ -149,7 +149,6 @@ if submit_comment:
         print 'Error: could not find comment column header:', args.comment_col
         exit(4)
 
-
 ########################
 ##### Prepare Data #####
 ########################
@@ -187,7 +186,6 @@ for i, r in enumerate(grades):
         missing_err.append((i+2, r[uni_col], r[grade_col], r[comment_col]))
         print 'Warning:', r[uni_col], 'not found in sdb'
         print
-
 
 ########################
 ##### Log Warnings #####
@@ -277,7 +275,6 @@ else:
     print '========================================================='
     print '===================== Error Report ======================'
     print '========================================================='
-    print
     print 'Error report ID:', res['error_report_id']
     for error in res['errors']:
         print 'Error message:', error['message']
