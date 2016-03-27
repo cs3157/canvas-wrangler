@@ -101,6 +101,7 @@ if not os.environ.has_key(AUTHVAR):
     exit(1)
 HEADER = {'Authorization': 'Bearer ' + os.environ[AUTHVAR]}
 
+# determine warning log name
 if len(args.log) == 0:
     log_name = grades_name.rsplit('.', 1)[0] + '-warning.log'
 else:
