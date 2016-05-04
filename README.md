@@ -40,7 +40,7 @@ Grade Spreadsheet Format
 ------------------------
 The grade spreadsheet should be a .csv file. Entries containing commas should be wrapped in quotation marks (e.g. `"contains a comma, this entry"`), and quotation marks should be 'escaped' using double quotation marks (e.g. `"this entry ""uses"" quotation marks"`). (Exporting a .csv from Google Docs will do this for you.)
 
-The grade spreadsheet must contain a single header row so that Canvas Wrangler can calibrate its column indices. By default, Canvas Wrangler will expect the grade column to be named `grade` and the comment column to be named `comment`. However, these can be overridden by using the `-G` and `-C` flags respectfully and specifying the header name after the flag argument (e.g. `python canvas-wrangler.py -G studentgrade`).
+The grade spreadsheet must contain a single header row so that Canvas Wrangler can calibrate its column indices. By default, Canvas Wrangler will expect the grade column to be named `grade` and the comment column to be named `comment`. However, these can be overridden by using the `-G` and `-C` flags respectfully and specifying the header name after the flag argument (e.g. `python canvas-wrangler.py -G studentgrade`). Extra columns are ignored.
 
 Grade and Comment Submission
 ----------------------------
@@ -58,7 +58,7 @@ To upload grades, run the command:
 
     ./canvas-wrangler.py <course id> <assignment id> <grades spreadsheet>
 
-_The assignment must be puslished before grades and comments can be uploaded._
+_The assignment must be published before grades and comments can be uploaded._
 
 To run Canvas Wrangler without submitting to Canvas, for testing, use the `-n` flag. The program will print out information about the arguments and the data it was going to post, then quit before submitting to Canvas.
 
