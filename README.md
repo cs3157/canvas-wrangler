@@ -1,5 +1,9 @@
 Canvas Wrangler
 ===============
+
+> [!IMPORTANT]
+> The [Canvas Wrangler](https://github.com/cs3157/boatswain/blob/master/canvas-wrangler.py) has now been incorporated into the [boatswain](https://github.com/cs3157/boatswain/) repository. This repository is unmaintained.
+
 > Dear CourseWorks,
 > 
 > I am so so sorry that I made fun of you and called you names.  
